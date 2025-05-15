@@ -2,7 +2,7 @@ services:
   - type: web
     name: pittas-backend
     env: node
-    buildCommand: npm install
+    buildCommand: npm audit fix && npm install
     startCommand: node src/server.js
     envVars:
       - key: NODE_ENV
