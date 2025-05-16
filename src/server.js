@@ -14,13 +14,19 @@ const app = express();
 app.use(helmet());
 app.use(morgan('dev'));
 
-// Add CORS headers middleware
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    next();
-});
+// CORS Configuration
+app.use(cors({
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:5173',  // Vite default port
+        'http://172.16.117.93:3000',
+        'https://pittas-backend.onrender.com',
+        'https://www.pittas.com'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 
 // Body Parser Middleware
 app.use(express.json());
