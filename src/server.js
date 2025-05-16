@@ -63,17 +63,13 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Start Server
+const HOST = process.env.HOST || '0.0.0.0';  // fallback to all interfaces
 const PORT = process.env.PORT || 5000;
 
+
 try {
-    app.listen(PORT, () => {
-        console.log(`
-🚀 Server is running!
-📝 Environment: ${process.env.NODE_ENV || 'development'}
-🔌 Port: ${PORT}
-📡 API URL: http://localhost:${PORT}
-        `);
+    app.listen(PORT, HOST , () => {
+        console.log(`Server running at http://${HOST}:${PORT}`)
     });
 } catch (error) {
     console.error('Failed to start server:', error);
