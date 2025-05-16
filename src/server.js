@@ -21,7 +21,7 @@ app.use(cors({
         'http://localhost:5173',  // Vite default port
         'http://172.16.117.93:3000',
         'https://pittas-backend.onrender.com',
-        'https://www.pittas.com'
+        'https://www.pittas.in'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
