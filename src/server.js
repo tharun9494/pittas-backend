@@ -67,9 +67,9 @@ const HOST = process.env.HOST || '0.0.0.0';  // fallback to all interfaces
 const PORT = process.env.PORT || 5000;
 
 
-try {
-    app.listen(PORT, HOST , () => {
-        console.log(`Server running at http://${HOST}:${PORT}`)
+try {   
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
     });
 } catch (error) {
     console.error('Failed to start server:', error);
