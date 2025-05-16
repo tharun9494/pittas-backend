@@ -14,12 +14,17 @@ const app = express();
 app.use(helmet());
 app.use(morgan('dev'));
 
+// Add CORS headers middleware
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+});
+
 // Body Parser Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// CORS Configuration
-app.use(cors());
 
 // API Routes
 app.use('/api/orders', orderRoutes);
@@ -66,10 +71,10 @@ app.use((err, req, res, next) => {
 const HOST = process.env.HOST || '0.0.0.0';  // fallback to all interfaces
 const PORT = process.env.PORT || 5000;
 
-
 try {   
-    app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+    app.listen(PORT, HOST, () => {
+        console.log(`Server running at http://${HOST}:${PORT}`);
+        console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     });
 } catch (error) {
     console.error('Failed to start server:', error);
