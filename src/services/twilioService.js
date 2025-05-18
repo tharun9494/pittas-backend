@@ -1,46 +1,30 @@
 const twilio = require('twilio');
+const config = require('../config/config');
 
 // Debug: Log environment variables (without sensitive data)
 console.log('🔍 Twilio Configuration Check:');
-console.log('TWILIO_ACCOUNT_SID:', process.env.TWILIO_ACCOUNT_SID ? '✅ Set' : '❌ Missing');
-console.log('TWILIO_AUTH_TOKEN:', process.env.TWILIO_AUTH_TOKEN ? '✅ Set' : '❌ Missing');
-console.log('TWILIO_FLOW_SID:', process.env.TWILIO_FLOW_SID ? '✅ Set' : '❌ Missing');
-console.log('ADMIN_PHONE_NUMBER:', process.env.ADMIN_PHONE_NUMBER ? '✅ Set' : '❌ Missing');
-console.log('TWILIO_PHONE_NUMBER:', process.env.TWILIO_PHONE_NUMBER ? '✅ Set' : '❌ Missing');
+console.log('TWILIO_ACCOUNT_SID:', config.twilio.accountSid ? '✅ Set' : '❌ Missing');
+console.log('TWILIO_AUTH_TOKEN:', config.twilio.authToken ? '✅ Set' : '❌ Missing');
+console.log('TWILIO_FLOW_SID:', config.twilio.flowSid ? '✅ Set' : '❌ Missing');
+console.log('ADMIN_PHONE_NUMBER:', config.twilio.adminPhoneNumber ? '✅ Set' : '❌ Missing');
+console.log('TWILIO_PHONE_NUMBER:', config.twilio.twilioPhoneNumber ? '✅ Set' : '❌ Missing');
 
 // Initialize Twilio client with proper error handling
 let client;
 try {
-    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
+    if (!config.twilio.accountSid || !config.twilio.authToken) {
         console.warn('⚠️ Twilio credentials are not configured. Notifications will be disabled.');
-        throw new Error('Twilio credentials are not configured');
+        client = null;
+    } else {
+        client = twilio(
+            config.twilio.accountSid,
+            config.twilio.authToken
+        );
+        console.log('✅ Twilio client initialized successfully');
     }
-    
-    client = twilio(
-        process.env.TWILIO_ACCOUNT_SID,
-        process.env.TWILIO_AUTH_TOKEN
-    );
-    console.log('✅ Twilio client initialized successfully');
 } catch (error) {
     console.error('❌ Error initializing Twilio client:', error.message);
-    // Create a mock client for development if credentials are missing
-    client = {
-        studio: {
-            v2: {
-                flows: () => ({
-                    executions: {
-                        create: async () => {
-                            console.log('📞 Mock notification sent (Twilio not configured)');
-                            return {
-                                sid: 'mock_sid',
-                                status: 'mock_status'
-                            };
-                        }
-                    }
-                })
-            }
-        }
-    };
+    client = null;
 }
 
 /**
@@ -54,6 +38,14 @@ try {
  * @param {string} orderData.address - Delivery address
  */
 async function notifyAdminOnOrder(orderData) {
+    if (!client) {
+        console.log('📞 Mock notification sent (Twilio not configured)');
+        return {
+            sid: 'mock_sid',
+            status: 'mock_status'
+        };
+    }
+
     try {
         const { orderId, customerName, phone, amount, items, address } = orderData;
         
@@ -61,11 +53,11 @@ async function notifyAdminOnOrder(orderData) {
         const itemsList = items.map(item => `${item.name} - ${item.quantity}`).join(', ');
         
         // Create the call using Twilio Studio Flow
-        const call = await client.studio.v2.flows(process.env.TWILIO_FLOW_SID)
+        const call = await client.studio.v2.flows(config.twilio.flowSid)
             .executions
             .create({
-                to: process.env.ADMIN_PHONE_NUMBER,
-                from: process.env.TWILIO_PHONE_NUMBER,
+                to: config.twilio.adminPhoneNumber,
+                from: config.twilio.twilioPhoneNumber,
                 parameters: {
                     orderId,
                     customerName,
@@ -80,7 +72,12 @@ async function notifyAdminOnOrder(orderData) {
         return call;
     } catch (error) {
         console.error('Error initiating call:', error);
-        throw error;
+        // Return a mock response instead of throwing
+        return {
+            sid: 'error_sid',
+            status: 'error',
+            error: error.message
+        };
     }
 }
 

@@ -55,8 +55,8 @@ async function placeOrder(req, res) {
         // Generate order ID
         const orderId = `ORD${Date.now()}`;
 
-        // Create new order in Firebase
-        const order = await Order.create({
+        // Create order object (without storing in Firebase)
+        const order = new Order({
             orderId,
             customerName,
             phone,
